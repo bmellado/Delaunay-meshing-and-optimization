@@ -12,13 +12,14 @@ def main():
 
     # Puntos con los cuales construir la triangulacion
     n= 300
-    #puntos = mallaCircular()
-    puntos = [Vector(40,30),Vector(60,40),Vector(70,30),Vector(90,50),Vector(90,70),Vector(50,70),Vector(30,60),Vector(60,90),Vector(70,90)]
-    listaRestringidos = [[Vector(40,30),Vector(70,30)],
+    puntos, listaRestringidos = mallaCircular(6, 200 )
+    puntos1, listaRestringidos1 = mallaCircular(40, 80)
+    #puntos = [Vector(40,30),Vector(60,40),Vector(70,30),Vector(90,50),Vector(90,70),Vector(50,70),Vector(30,60),Vector(60,90),Vector(70,90)]
+    """listaRestringidos = [[Vector(40,30),Vector(70,30)],
                          [Vector(70, 30), Vector(90, 50)],
                          [Vector(90, 50), Vector(90, 70)],
                          [Vector(90, 70), Vector(70, 90)],
-                         [Vector(70, 90), Vector(40, 30)]]
+                         [Vector(70, 90), Vector(40, 30)]]"""
 
     #puntos = [Vector(40,30),Vector(60,40),Vector(70,30),Vector(90,50),Vector(90,70),Vector(30,60),Vector(50,70),Vector(60,90),Vector(70,90)]
 
@@ -37,31 +38,26 @@ def main():
     listaTriangulos = [[t1, [None, None, 1]],
                        [t2, [None, 0, None]]]
 
-    ######### BUSQUEDA DEL PUNTO EN TRIANGULO############
-
-    # Defino punto Q que servira de referencia para ubicar en que triangulo se ubica un punto dado
-    Q = esquina[2]  # Este punto es el que esta mas a la derecha y arriba de la triangulacion
-
-    # Lista que contiene todos los triangulos que tienen como una de sus vertices el punto Q
-    listaQ = [t1, t2]
-
 ######### INSERCION DE PUNTOS EN LA MALLA #########
 
     for punto in puntos:
-        agregar(punto,listaTriangulos,Q,listaQ)
-
+        agregar(punto,listaTriangulos)
+    for punto in puntos1:
+        agregar(punto, listaTriangulos)
     print(len(listaTriangulos))
     for arista in listaRestringidos:
         restringir(arista[0],arista[1],listaTriangulos)
-    #restringir(Vector(60,90),Vector(90,50),listaTriangulos)
-    #restringir(Vector(60, 90), Vector(60, 40), listaTriangulos)
+    for arista in listaRestringidos1:
+        restringir(arista[0], arista[1], listaTriangulos)
     eliminarAntiHorario(listaRestringidos,listaTriangulos)
-    #for i in listaTriangulos:
-     #   i[0].imprimir()
-     #   print(i[1])
+    eliminarHorario(listaRestringidos1, listaTriangulos)
 
-    #lep1 = lepp(listaTriangulos[200][0],listaTriangulos,Triangulo(Vector(0,0),Vector(0,0),Vector(0,0)))
-    #print(lep1[0].imprimir(),lep1[1].imprimir(),lep1[2],lep1[3])
+
+
+    mejorar(listaTriangulos)
+    print("-------------------------")
+    print("/////////////////////")
+
 
     run = True
     while run:

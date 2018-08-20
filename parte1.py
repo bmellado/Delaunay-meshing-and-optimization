@@ -22,6 +22,8 @@ class Triangulo(Figura):
     def imprimir(self):
         print(self.p1,self.p2,self.p3)
 
+    #def __eq__(self, other):
+    #     return self.p1 == other.p1 and self.p2 == other.p2 and self.p3 == other.p3
 
 #genera lista n puntos aleatorios
 def generar(n):
@@ -39,17 +41,6 @@ def grilla():
     for i in range(5,25):
         for j in range(5,25):
             lista.append(Vector(i*20,j*20))
-    return lista
-
-def mallaCircular():
-    lista = []
-    radio = 250
-    teta = 18
-    while(radio > 20):
-        for i in range (20):
-            lista.append(Vector(int(radio*cos(teta*i)+300),int(radio*sin(teta*i)+300)))
-        radio -= 20
-    #shuffle(lista)
     return lista
 
 
@@ -171,8 +162,9 @@ def verticeRestante(t,p1,p2):
 def posicionTriangulo(triangulo, listaTriangulos):
     c=0
     for i in listaTriangulos:
-        if(triangulo == i[0]):
-            break
+        if(i[0] != None):
+            if(triangulo == i[0]):
+                break
         c+=1
     return c
 
@@ -204,6 +196,28 @@ def pCruz(p1, p2, punto):
     else:
         return 0
 
+def hallarTrianguloNaive(punto,listaTriangulos):
+    for t in listaTriangulos:
+        if t[0] != None:
+            triangulo = t[0]
+            if (pCruz(triangulo.p1, triangulo.p2, punto) == 1 and pCruz(triangulo.p2, triangulo.p3,
+                                                                        punto) == 1 and pCruz(triangulo.p3,
+                                                                                              triangulo.p1,
+                                                                                              punto) == 1):
+                return [triangulo, "in"]
+            elif ((pCruz(triangulo.p1, triangulo.p2, punto) == 1 and pCruz(triangulo.p2, triangulo.p3,
+                                                                           punto) == 1 and pCruz(triangulo.p3,
+                                                                                                 triangulo.p1,
+                                                                                                 punto) == 0)
+                  or (pCruz(triangulo.p1, triangulo.p2, punto) == 1 and pCruz(triangulo.p2, triangulo.p3,
+                                                                              punto) == 0 and pCruz(triangulo.p3,
+                                                                                                    triangulo.p1,
+                                                                                                    punto) == 1)
+                  or (pCruz(triangulo.p1, triangulo.p2, punto) == 0 and pCruz(triangulo.p2, triangulo.p3,
+                                                                              punto) == 1 and pCruz(triangulo.p3,
+                                                                                                    triangulo.p1,
+                                                                                                    punto) == 1)):
+                return [triangulo, "edge"]
 
 def hallarTriangulo(punto,listaTriangulos,triangulo):
     pos = posicionTriangulo(triangulo, listaTriangulos)
@@ -213,18 +227,27 @@ def hallarTriangulo(punto,listaTriangulos,triangulo):
          or (pCruz(triangulo.p1,triangulo.p2,punto)==1 and pCruz(triangulo.p2,triangulo.p3,punto)==0 and pCruz(triangulo.p3,triangulo.p1,punto)==1)
         or (pCruz(triangulo.p1,triangulo.p2,punto)==0 and pCruz(triangulo.p2,triangulo.p3,punto)==1 and pCruz(triangulo.p3,triangulo.p1,punto)==1)):
         return [triangulo, "edge"]
-    elif(pCruz(triangulo.p1,triangulo.p2,punto)==-1):
+    elif(pCruz(triangulo.p1, triangulo.p2, punto) == -1):
         posTrianguloAd = listaTriangulos[pos][1][2]
-        trianguloAd = listaTriangulos[posTrianguloAd][0]
-        return hallarTriangulo(punto,listaTriangulos,trianguloAd)
+        if (posTrianguloAd != None):
+            trianguloAd = listaTriangulos[posTrianguloAd][0]
+            return hallarTriangulo(punto, listaTriangulos, trianguloAd)
+        else:
+          return hallarTrianguloNaive(punto, listaTriangulos)
     elif (pCruz(triangulo.p2, triangulo.p3, punto) == -1):
         posTrianguloAd = listaTriangulos[pos][1][0]
-        trianguloAd = listaTriangulos[posTrianguloAd][0]
-        return hallarTriangulo(punto, listaTriangulos, trianguloAd)
+        if (posTrianguloAd != None):
+            trianguloAd = listaTriangulos[posTrianguloAd][0]
+            return hallarTriangulo(punto, listaTriangulos, trianguloAd)
+        else:
+            return hallarTrianguloNaive(punto, listaTriangulos)
     elif (pCruz(triangulo.p3, triangulo.p1, punto) == -1):
         posTrianguloAd = listaTriangulos[pos][1][1]
-        trianguloAd = listaTriangulos[posTrianguloAd][0]
-        return hallarTriangulo(punto, listaTriangulos, trianguloAd)
+        if (posTrianguloAd != None):
+            trianguloAd = listaTriangulos[posTrianguloAd][0]
+            return hallarTriangulo(punto, listaTriangulos, trianguloAd)
+        else:
+            return hallarTrianguloNaive(punto, listaTriangulos)
 
 #############################################################################################
 ####LEGALIZACION#############################################################################
@@ -240,14 +263,21 @@ def inCircle(a,b,c,d):
     else:
         return "in"
 
-def legalize(arista,t,listaTriangulos,Q,listaQ):
+def legalize(arista,t,listaTriangulos):
     p1 = arista[0]
     p2 = arista[1]
     vOp = verticeRestante(t,p1,p2)
     pos = posicionTriangulo(t,listaTriangulos)
+
+
+    if(pos == len(listaTriangulos)):
+        return None
+
     posTAd = listaTriangulos[pos][1][posVertice(vOp,t)-1]
     if(posTAd == None):
         return None
+
+
     tAd = listaTriangulos[posTAd][0]
     vOpAd = verticeNoCompartido(tAd,t)
     test = inCircle(t.p1,t.p2,t.p3,vOpAd)
@@ -261,17 +291,6 @@ def legalize(arista,t,listaTriangulos,Q,listaQ):
 
         anti(nuevoT1)
         anti(nuevoT2)
-
-        # Agregar a listaQ los triangulos que tengan como vertice Q
-        if (verticeEnTriangulo(Q, nuevoT1)):
-            listaQ.append(nuevoT1)
-        if (verticeEnTriangulo(Q, nuevoT2)):
-            listaQ.append(nuevoT2)
-        # Si el triangulo antiguo y adyacente estan en lista Q, que los remueva
-        if (listaQ.count(t) != 0):
-            listaQ.remove(t)
-        if (listaQ.count(tAd) != 0):
-            listaQ.remove(tAd)
 
         ##Relacionar triangulos nuevos entre si
         # nuevoT1
@@ -378,20 +397,25 @@ def legalize(arista,t,listaTriangulos,Q,listaQ):
         listaTriangulos.pop(posTAd)
         listaTriangulos.insert(posTAd, [nuevoT2, refT2])
 
-        return legalize([p1, vOp],nuevoT1,listaTriangulos,Q,listaQ),legalize([p1, vOpAd], nuevoT1, listaTriangulos, Q, listaQ),legalize([p2, vOp], nuevoT2, listaTriangulos, Q, listaQ),legalize([p2, vOpAd], nuevoT2, listaTriangulos, Q, listaQ)
-        """
-        legalize([p1, vOpAd], nuevoT1, listaTriangulos, Q, listaQ)
-        legalize([p2, vOp], nuevoT2, listaTriangulos, Q, listaQ)
-        legalize([p2, vOpAd], nuevoT2, listaTriangulos, Q, listaQ)
-        """
+        return legalize([p1, vOp],nuevoT1,listaTriangulos),\
+               legalize([p1, vOpAd], nuevoT1, listaTriangulos),\
+               legalize([p2, vOp], nuevoT2, listaTriangulos),\
+               legalize([p2, vOpAd], nuevoT2, listaTriangulos)
 
 #Funcion que agrega un punto dentro del triangulo que lo contiene
-def agregar(punto,listaTriangulos,Q,listaQ):
+def agregar(punto,listaTriangulos):
     ultimaPos = len(listaTriangulos)
 
-    triangulo = hallarTriangulo(punto,listaTriangulos,listaTriangulos[0][0])
+    for x in listaTriangulos:
+
+        if x[0] != None:
+            tinicial = x[0]
+            break
+    triangulo = hallarTriangulo(punto,listaTriangulos,tinicial)
+    #triangulo[0].imprimir()
     if(triangulo == None):
         print("no se encontro triangulo")
+        print(punto)
         return None
     posicion = triangulo[1]
     triangulo = triangulo[0]
@@ -404,16 +428,6 @@ def agregar(punto,listaTriangulos,Q,listaQ):
         anti(nuevoT1)
         anti(nuevoT2)
         anti(nuevoT3)
-        #Agregar a listaQ los triangulos que tengan como vertice Q
-        if(verticeEnTriangulo(Q,nuevoT1)):
-            listaQ.append(nuevoT1)
-        if (verticeEnTriangulo(Q, nuevoT2)):
-            listaQ.append(nuevoT2)
-        if (verticeEnTriangulo(Q, nuevoT3)):
-            listaQ.append(nuevoT3)
-        if(listaQ.count(triangulo)!=0):
-
-            listaQ.remove(triangulo)
 
         #Buscar posicion del triangulo antiguo en lista
         pos = posicionTriangulo(triangulo,listaTriangulos)
@@ -493,12 +507,14 @@ def agregar(punto,listaTriangulos,Q,listaQ):
 
         #Insertar triangulos
         listaTriangulos.pop(pos)
-        listaTriangulos.insert(pos, [nuevoT1,refT1])
+        listaTriangulos.insert(pos, [nuevoT1, refT1])
         listaTriangulos.insert(ultimaPos, [nuevoT2, refT2])
         listaTriangulos.insert(ultimaPos + 1, [nuevoT3, refT3])
-        legalize([triangulo.p1,triangulo.p2],nuevoT1,listaTriangulos,Q,listaQ)
-        legalize([triangulo.p2, triangulo.p3], nuevoT2, listaTriangulos, Q, listaQ)
-        legalize([triangulo.p1, triangulo.p3], nuevoT3, listaTriangulos, Q, listaQ)
+        legalize([triangulo.p1, triangulo.p2], nuevoT1, listaTriangulos)
+        legalize([triangulo.p2, triangulo.p3], nuevoT2, listaTriangulos)
+        legalize([triangulo.p1, triangulo.p3], nuevoT3, listaTriangulos)
+
+
 
     elif(posicion == "edge"):
 
@@ -527,21 +543,6 @@ def agregar(punto,listaTriangulos,Q,listaQ):
         anti(nuevoT2)
         anti(nuevoT3)
         anti(nuevoT4)
-
-        # Agregar a listaQ los triangulos que tengan como vertice Q
-        if (verticeEnTriangulo(Q, nuevoT1)):
-            listaQ.append(nuevoT1)
-        if (verticeEnTriangulo(Q, nuevoT2)):
-            listaQ.append(nuevoT2)
-        if (verticeEnTriangulo(Q, nuevoT3)):
-            listaQ.append(nuevoT3)
-        if (verticeEnTriangulo(Q, nuevoT4)):
-            listaQ.append(nuevoT4)
-        #Si el triangulo antiguo y adyacente estan en lista Q, que los remueva
-        if (listaQ.count(triangulo) != 0):
-            listaQ.remove(triangulo)
-        if (listaQ.count(trianguloAd) != 0):
-            listaQ.remove(trianguloAd)
 
         # Guardar las referencias del triangulo antiguo
         referencia1 = listaTriangulos[pos][1]
@@ -660,7 +661,7 @@ def agregar(punto,listaTriangulos,Q,listaQ):
         listaTriangulos.insert(posAd, [nuevoT2, refT2])
         listaTriangulos.insert(ultimaPos, [nuevoT3, refT3])
         listaTriangulos.insert(ultimaPos + 1, [nuevoT4, refT4])
-        legalize([p1,verOpTriangulo], nuevoT1, listaTriangulos, Q, listaQ)
-        legalize([p2,verOpTriangulo], nuevoT2, listaTriangulos, Q, listaQ)
-        legalize([p2,verOpTrianguloAd], nuevoT3, listaTriangulos, Q, listaQ)
-        legalize([p1,verOpTrianguloAd], nuevoT4, listaTriangulos, Q, listaQ)
+        legalize([p1, verOpTriangulo], nuevoT1, listaTriangulos)
+        legalize([p2, verOpTriangulo], nuevoT2, listaTriangulos)
+        legalize([p2, verOpTrianguloAd], nuevoT3, listaTriangulos)
+        legalize([p1, verOpTrianguloAd], nuevoT4, listaTriangulos)
