@@ -525,7 +525,7 @@ def eliminarHorario(listaRestringidos,listaTriangulos):
 
 #funcion que retorna True si un triangulo no cumple que su angulo minimo sea mayor a 30 grados
 def malo(t):
-    if(anguloMin(t) < math.pi/6.0):
+    if(anguloMin(t) < math.pi/6):
         return True
     else:
         return False
@@ -591,7 +591,8 @@ def insercionBorde(t, arista, listaTriangulos):
     listaTriangulos.pop(pos)
     listaTriangulos.insert(pos, [nuevoT1, refT1])
     listaTriangulos.insert(ultimapos, [nuevoT2, refT2])
-
+    legalize([p1,p3], nuevoT1, listaTriangulos)
+    legalize([p2,p3], nuevoT2, listaTriangulos)
 
 
 
@@ -629,8 +630,17 @@ def mejorar(listaTriangulos):
                                 if(listaTriangulos[posTriangulo][1][posVertice(np3, triangulo) - 1] == None):
                                     insercionBorde(triangulo, [np1,np2], listaTriangulos)
                                 else:  #caso borde en donde la arista midsize no sea un borde
-                                    agregar(insertionPoint, listaTriangulos)
+                                    t0 = par[0]
+                                    t1 = par[1]
+                                    p1 = aristaGrande(t0)[0]  # indiferente usar t0 o t1,entregan lo mismo
+                                    p2 = aristaGrande(t0)[1]
 
+                                    p3 = verticeRestante(t0, p1, p2)
+                                    p4 = verticeRestante(t1, p1, p2)
+                                    centroidex = (p1.x + p2.x + p3.x + p4.x) / 4
+                                    centroidey = (p1.y + p2.y + p3.y + p4.y) / 4
+                                    centroide = Vector(centroidex, centroidey)
+                                    agregar(centroide, listaTriangulos)
 
                             #Caso 1.2: los triangulos terminales no contienen aristas restringidas
                             else:
@@ -658,12 +668,12 @@ def mejorar(listaTriangulos):
         if not(hayMalos):
             break
 
-def mallaCircular(puntos, radio):
+def mallaCircular(puntos, radio, centrox, centroy):
 
     lista =  []
     teta = 2 * math.pi / puntos
     for i in range(puntos):
-        lista.append(Vector(int(radio * cos(teta * i) + 300), int(radio * sin(teta * i) + 300)))
+        lista.append(Vector(int(radio * cos(teta * i) + centrox), int(radio * sin(teta * i) + centroy)))
     listaRestringidos = []
     for i in range(len(lista)):
         listaRestringidos.append([lista[i],lista[(i + 1)%len(lista)]])

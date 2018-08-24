@@ -12,10 +12,11 @@ def main():
 
     # Puntos con los cuales construir la triangulacion
     n= 300
-    puntos, listaRestringidos = mallaCircular(6, 200 )
-    puntos1, listaRestringidos1 = mallaCircular(40, 80)
-    #puntos = [Vector(40,30),Vector(60,40),Vector(70,30),Vector(90,50),Vector(90,70),Vector(50,70),Vector(30,60),Vector(60,90),Vector(70,90)]
-    """listaRestringidos = [[Vector(40,30),Vector(70,30)],
+    puntos, listaRestringidos = mallaCircular(60, 250, 300, 300)
+    puntos1, listaRestringidos1 = mallaCircular(30, 50, 200, 300)
+    puntos2, listaRestringidos2 = mallaCircular(30, 80, 400, 250)
+    """puntos = [Vector(40,30),Vector(60,40),Vector(70,30),Vector(90,50),Vector(90,70),Vector(50,70),Vector(30,60),Vector(60,90),Vector(70,90)]
+    listaRestringidos = [[Vector(40,30),Vector(70,30)],
                          [Vector(70, 30), Vector(90, 50)],
                          [Vector(90, 50), Vector(90, 70)],
                          [Vector(90, 70), Vector(70, 90)],
@@ -44,17 +45,22 @@ def main():
         agregar(punto,listaTriangulos)
     for punto in puntos1:
         agregar(punto, listaTriangulos)
+    for punto in puntos2:
+        agregar(punto, listaTriangulos)
     print(len(listaTriangulos))
     for arista in listaRestringidos:
         restringir(arista[0],arista[1],listaTriangulos)
     for arista in listaRestringidos1:
         restringir(arista[0], arista[1], listaTriangulos)
+    for arista in listaRestringidos2:
+        restringir(arista[0], arista[1], listaTriangulos)
     eliminarAntiHorario(listaRestringidos,listaTriangulos)
     eliminarHorario(listaRestringidos1, listaTriangulos)
+    eliminarHorario(listaRestringidos2 , listaTriangulos)
 
 
 
-    mejorar(listaTriangulos)
+    #mejorar(listaTriangulos)
     print("-------------------------")
     print("/////////////////////")
 
